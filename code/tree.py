@@ -71,24 +71,16 @@ class BPlusTreeNode:
 
     def prune_branch(self):
         # Cluster the standard embeddings of children
-        # kmeans = KMeans(n_clusters=2, random_state=0)
-        # embeddings = np.array([child.standard_embs for child in self.children])
-        # kmeans.fit(embeddings)
-        # labels = list(kmeans.labels_)
-        # cluster_centers = kmeans.cluster_centers_
+        kmeans = KMeans(n_clusters=2, random_state=0)
+        embeddings = np.array([child.standard_embs for child in self.children])
+        kmeans.fit(embeddings)
+        labels = list(kmeans.labels_)
+        cluster_centers = kmeans.cluster_centers_
 
         # Split children into two groups
-        #group1_children = [child for idx, child in enumerate(self.children) if labels[idx] == 0]
-        #group2_children = [child for idx, child in enumerate(self.children) if labels[idx] == 1]
+        group1_children = [child for idx, child in enumerate(self.children) if labels[idx] == 0]
+        group2_children = [child for idx, child in enumerate(self.children) if labels[idx] == 1]
 
-        group1_children = []
-        group2_children = []
-        for idx, child in enumerate(self.children):
-            if idx < len(self.children):
-                group1_children.append(child)
-            else:
-                group2_children.append(child)
-        
         new_std_emb1 = np.mean([child.emb for child in group1_children])
         new_std_emb2 = np.mean([child.emb for child in group2_children])
         
@@ -112,6 +104,7 @@ class BPlusTreeNode:
             new_root.children = [self, new_parent]
             self.parent = new_root
             new_parent.parent = new_root
+
         return new_parent
 
 class BPlusTree:
@@ -119,8 +112,6 @@ class BPlusTree:
         self.max_branch_num = max_branch_num
         self.max_leaf_size = max_leaf_size
         self.walk_multi_branch_threshold = walk_multi_branch_threshold
-        self.node_index = []
-        self.rightest_index = []
 
     def build_pretrained_structure(self, pretrained_cluster_info: dict, depth: int = 2):
         def add_children(node, cluster_info, current_depth, target_depth):
@@ -142,14 +133,11 @@ class BPlusTree:
         add_children(self.root, pretrained_cluster_info, 0, depth)
         return self.root
     
-    
     def match_similarity(self, query_vector: list, key_vector: list):
         query_vector = np.array(query_vector)
         key_vector = np.array(key_vector)
         query_norm = query_vector / np.linalg.norm(query_vector)
         key_norm = key_vector / np.linalg.norm(key_vector)
-        
-        # Compute cosine similarities
         similarity = np.dot(key_norm, query_norm)
         return similarity
 
@@ -180,7 +168,6 @@ class BPlusTree:
             result_similarities.append(self.match_similarity(
                 query_vector, node.standard_embs))
             
-
 
     def insert(self, root: BPlusTreeNode, data:dict):
         candidate_nodes = []

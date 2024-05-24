@@ -5,7 +5,8 @@
 ##### group3 -5 subgroups
 ##### group4 -5 subgroups
 #### cluster_info [group] = {'center':np.array,
+####                         'name':str
 ####                         'subgroup':{
-####                              'group_id':{'center':np.array}
+####                              'group_id':{'center':np.array, 'name':str}
 ####                          }
 #### }
