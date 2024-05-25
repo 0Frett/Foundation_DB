@@ -25,6 +25,7 @@ def parse_string_to_list(input_string):
     return items
 
 
+
 #########   KEY IN YOUR IP  #########
 client = MilvusClient(
     uri="http://192.168.1.111:19530"
@@ -33,8 +34,12 @@ client = MilvusClient(
 file_path = "db-data/emb_info.pkl"
 with open(file_path, 'rb') as file:
     emb_info = pickle.load(file)
-df = pd.read_csv('db-data\merge_df.csv')
-pair_path = 'db-data\save_pairs.pkl' 
+df = pd.read_csv('db-data/test_df.csv')
+pair_path = 'db-data/test_save_pairs.pkl' 
+s = {}
+with open(pair_path, 'wb') as file:
+    pickle.dump(s, file)
+
 load = True
 for index, row in tqdm(df.iterrows(), total=df.shape[0]):
     if load:
@@ -53,11 +58,14 @@ for index, row in tqdm(df.iterrows(), total=df.shape[0]):
         'subgroup' : row['subgroup'],
         'embeddings' : emb_info[row['photo_id']]['embs']
     }
-    if index % 2000 == 0:
+    if index % 200 == 0:
         with open(pair_path, 'wb') as file:
             pickle.dump(save_pairs, file)
         load = True
         time.sleep(3)
+
+with open(pair_path, 'wb') as file:
+    pickle.dump(save_pairs, file)
 
 #pair_path = 'db-data\save_pairs.pkl' 
 with open(pair_path, 'rb') as file:
