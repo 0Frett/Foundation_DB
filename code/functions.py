@@ -38,21 +38,25 @@ def retrieve_data_to_user(root:BPlusTreeNode, tree:BPlusTree, query_data:dict, r
     data_df = tree.retrieve_data(root, query_data, return_info, number)
     return data_df
 
+is_initialized = False
 
 if __name__ == '__main__':
     # parser = get_parser()
     # args = parser.parse_args()
 
     # user input
-    max_branch_num = 5
-    max_leaf_size = 10
-    walk_multi_branch_threshold = 0.5
-    structure_path = 'db-data/cluster_info.pkl'
-    tree, root = initialize_pretrained_db(max_branch_num=max_branch_num, 
-                                          max_leaf_size=max_leaf_size, 
-                                          walk_multi_branch_threshold=walk_multi_branch_threshold, 
-                                          structure_path=structure_path)
-
+    if not is_initialized:
+        max_branch_num = 5
+        max_leaf_size = 10
+        walk_multi_branch_threshold = 0.5
+        structure_path = 'testing/test_cluster_info.pkl'
+        tree, root = initialize_pretrained_db(max_branch_num=max_branch_num, 
+                                            max_leaf_size=max_leaf_size, 
+                                            walk_multi_branch_threshold=walk_multi_branch_threshold, 
+                                            structure_path=structure_path)
+        is_initialized = True
+    
+    
     # test insertion
     random.seed(8787)
     insert_vector = [random.random() for i in range(512)]
@@ -65,10 +69,10 @@ if __name__ == '__main__':
                 'group':0,
                 'subgroup':-1
             }
-    for i in range(25):
+    for i in range(20):
         insert_data_to_db(root, tree, insert_data)
     
-    
+    print(root.bfs(root))
     '''
     # test retrieve
     query_vector = [random.random() for i in range(512)]

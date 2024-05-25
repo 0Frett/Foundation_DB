@@ -16,6 +16,25 @@ class BPlusTreeNode:
         if self.is_leaf:
             create_partition(self.name)
         
+    def bfs(self, root):
+        if not root:
+            return []
+        queue = [(root, None)]  # Queue of tuples (node, layer, parent name)
+        sequence = []
+
+        while queue:
+            current_node, parent_name = queue.pop(0)
+            sequence.append((current_node.name, parent_name))
+            
+            # Enqueue all children of the current node with incremented layer and current node's name as parent name
+            for child in current_node.children:
+                queue.append((child, current_node.name))
+        
+        return sequence
+            
+        
+        return sequence
+
     def update_size(self):
         if self.is_leaf == True:
             size = get_sizeof_partition(partition=[self.name])
@@ -73,6 +92,8 @@ class BPlusTreeNode:
         self.drop()
         parent = self.parent
         parent.children.remove(self)
+        parent.children.append(cluster1)
+        parent.children.append(cluster2)
         self.parent = None
         
         return cluster1.parent
@@ -89,11 +110,11 @@ class BPlusTreeNode:
         group1_children = [child for idx, child in enumerate(self.children) if labels[idx] == 0]
         group2_children = [child for idx, child in enumerate(self.children) if labels[idx] == 1]
 
-        new_std_emb1 = np.mean([child.emb for child in group1_children])
-        new_std_emb2 = np.mean([child.emb for child in group2_children])
+        # new_std_emb1 = np.mean([child.emb for child in group1_children])
+        # new_std_emb2 = np.mean([child.emb for child in group2_children])
         
         # Pull one group to the upper level by creating a new parent node
-        new_parent = BPlusTreeNode(name=f'{self.name}_p', embs=new_std_emb1, is_leaf=False, parent=self.parent)
+        new_parent = BPlusTreeNode(name=f'{self.name}_p', embs=cluster_centers[0], is_leaf=False, parent=self.parent)
         new_parent.children = group1_children
         
         # Assign the new parent to the children
@@ -102,7 +123,7 @@ class BPlusTreeNode:
         
         # Update the current node's children with the other group
         self.children = group2_children
-        self.embs = new_std_emb2
+        self.embs = cluster_centers[1]
         # Update the parent node's children if it's not the root
         if self.parent is not None:
             self.parent.children.append(new_parent)
@@ -192,11 +213,14 @@ class BPlusTree:
         if result_node.size > self.max_leaf_size:
             parent = result_node.split_child()
             print(f'split node {result_node.name}')
+            print(root.bfs(root))
 
         while prune_branch_node.parent != None:
+            print(len(prune_branch_node.children), self.max_branch_num)
             if len(prune_branch_node.children) > self.max_branch_num:
                 print(f'prune node {prune_branch_node.name} branches')
                 prune_branch_node  = prune_branch_node.prune_branch()
+                print(root.bfs(root))
             else:
                 break
         
