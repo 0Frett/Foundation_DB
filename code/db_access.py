@@ -5,9 +5,18 @@ client = MilvusClient(
 )
 collection = 'image'
 
+def create_collection():
+    client.create_collection(
+        collection_name=collection
+    )
 
 def load_collection():
     client.load_collection(
+        collection_name=collection
+    )
+
+def drop_collection():
+    client.drop_collection(
         collection_name=collection
     )
 

@@ -1,4 +1,5 @@
 import pickle
+import pandas as pd
 from sklearn.cluster import KMeans
 import numpy as np
 from db_access import *
@@ -190,7 +191,7 @@ class BPlusTree:
         while prune_branch_node.parent != None:
             if len(prune_branch_node.children) > self.max_branch_num:
                 print(f'prune node {prune_branch_node.name} branches')
-                prune_branch_node = prune_branch_node.prune_branch()
+                prune_branch_node  = prune_branch_node.prune_branch()
             else:
                 break
     

@@ -1,3 +1,4 @@
+from db_access import *
 from tree import *
 import pickle
 import random
@@ -33,7 +34,7 @@ def insert_data_to_db(root:BPlusTreeNode, tree:BPlusTree, insert_data:dict):
     tree.insert(root, insert_data)
     print('Successfully insert data')
 
-def retrieve_data_to_user(root:BPlusTreeNode, tree:BPlusTree, query_data:dict, return_info:list)
+def retrieve_data_to_user(root:BPlusTreeNode, tree:BPlusTree, query_data:dict, return_info:list):
     data_df = tree.retrieve_data(root, query_data, return_info)
     return data_df
 
@@ -74,7 +75,7 @@ if __name__ == '__main__':
             'group':0,
             'subgroup':-1
         }
-    retrieve_data_to_user(root, tree, query_data, return_info)
+    retrieve_data_to_user(root, tree, insert_data, return_info)
 
     
 
