@@ -1,37 +1,84 @@
 import numpy as np
+import pickle
+import pandas as pd
+import numpy as np
 from sklearn.cluster import KMeans
-from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
+from sklearn.manifold import TSNE
 import seaborn as sns
 from sklearn.metrics import silhouette_score
+import time
 
-data = np.load('./db-data/embeddings_ALL.npy')
-print(f'Data shape: {data.shape}')  # Should print (25000, 512)
-sil = []
-clus = [5, 10, 15]
-for n_clusters in clus:
-    print(n_clusters)
-    kmeans = KMeans(n_clusters=n_clusters, random_state=0).fit(data)
+def get_cluster_num(data):
+    #print(f'Data shape: {data.shape}')  # Should print (25000, 512)
+    sil = []
+    clus = [3, 5, 10, 15, 20]
+    for n_clusters in clus:
+        kmeans = KMeans(n_clusters=n_clusters, random_state=0).fit(data)
+        labels = kmeans.labels_
+        cluster_centers = kmeans.cluster_centers_
+        sil.append(silhouette_score(data, labels, metric = 'cosine'))
+    max_index = sil.index(max(sil))
+    cluster_num = clus[max_index]
+    return get_cluster_num
+
+
+def get_subgroup(data, num_clusters, ids):
+    time.sleep(3)
+    with open('./db-data/emb_info.pkl', 'rb') as pickle_file:
+        emb_key = pickle.load(pickle_file)
+    with open('./db-data/cluster_info.pkl', 'rb') as pickle_file:
+        cluster_info = pickle.load(pickle_file)
+
+    kmeans = KMeans(n_clusters=num_clusters, random_state=0).fit(data)
+    labels = list(kmeans.labels_)
+    cluster_centers = kmeans.cluster_centers_
+    cluster_info[group_name]['subgroup'] = {
+        str(i):{'center':cluster_centers[i]} for i in range(num_clusters)
+    }
+    assert len(labels) == len(ids)
+    for idx in range(len(ids)):
+        emb_key[ids[idx]]['subgroup'] = str(labels[idx]) 
+    
+    with open('./db-data/emb_info.pkl', 'wb') as pickle_file:
+        pickle.dump(emb_key, pickle_file)
+
+    with open('./db-data/cluster_info.pkl', 'wb') as pickle_file:
+        pickle.dump(cluster_info, pickle_file)
+    print(f"success establish subgroup of group{group_name}")
+    time.sleep(3)
+
+
+
+def recursive_cluster(data, depth, current_depth=0):
+    if current_depth >= depth:
+        return {'data': data}
+
+    cluster_num = get_cluster_num(data)
+    kmeans = KMeans(n_clusters=cluster_num, random_state=42)
+    kmeans.fit(data)
     labels = kmeans.labels_
     cluster_centers = kmeans.cluster_centers_
-    sil.append(silhouette_score(data, labels, metric = 'cosine'))
-    tsne = TSNE(n_components=2, random_state=0)
-    data_2d = tsne.fit_transform(data)
 
-    # Plot the t-SNE results
-    plt.figure(figsize=(10, 8))
-    sns.scatterplot(x=data_2d[:, 0], y=data_2d[:, 1], hue=labels, palette=sns.color_palette("hsv", n_clusters), legend='full')
-    plt.title(f't-SNE visualization of {n_clusters} K-means clusters')
-    plt.xlabel('t-SNE feature 1')
-    plt.ylabel('t-SNE feature 2')
-    plt.legend(title='Cluster')
-    plt.savefig(f'./figs/cosine/K-means{n_clusters}_tsne_visualization.png', format='png', dpi=300)
-    plt.show()
+    clusters = {}
+    for i in range(cluster_num):
+        cluster_data = data[labels == i]
+        clusters[i] = recursive_cluster(cluster_data, depth, current_depth+1)
+    
+    return {
+        'labels': labels,
+        'clusters': clusters
+    }
 
-plt.figure(figsize=(12, 6))
-plt.plot(clus,sil)
-plt.title('silhoutte score of clusters')
-plt.xlabel('clusters')
-plt.ylabel('score')
-plt.savefig(f'./figs/cosine/sil_cluster.png', format='png', dpi=300)
-plt.show()
+
+result = recursive_cluster(data, depth=2)
+
+# The result is a nested dictionary containing cluster labels and sub-clusters
+print(result)
+
+
+if __name__ == '__main__':
+    data = np.load('./db-data/embeddings_ALL.npy')
+    depth = 2
+    
+

@@ -9,12 +9,39 @@ import pandas as pd
 import requests
 import torch
 import numpy as np
+from user import *
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(torch.cuda.is_available())
-model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
-model.to(device)
-processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+# init tree
+max_branch_num = 20
+max_leaf_size = 2400
+walk_multi_branch_threshold = 0.6
+structure_path = 'db-data/cluster_info.pkl'
+tree_params = get_user_tree_params(max_branch_num=max_branch_num, 
+                                   max_leaf_size=max_leaf_size, 
+                                   walk_multi_branch_threshold=walk_multi_branch_threshold, 
+                                   structure_path=structure_path)
+tree, root = initialize_pretrained_db(**tree_params)
 
-def preprocess_user_query(image_file:str, text_inpur:str, )
+# search using image and text
+print('========== Test Query ============')
+image_path = 'test.png'
+text_input = 'A dog on the grass.'
+embs, result_info = user_query_preprocess(image_path=image_path, 
+                             text_input=text_input,
+                             return_image_url=True,
+                             return_image_description=True,
+                             return_keywords=True)
+searched_df = retrieve_data_to_user(root, tree, embs, return_info, retrieve_num)
+print('data_num', len(searched_df))
+print(searched_df.head(5))
 
+print('========== Test Insertion ============')
+image_path = 'test.png'
+image_url = 'https://hips.hearstapps.com/hmg-prod/images/little-cute-maltipoo-puppy-royalty-free-image-1652926025.jpg?crop=0.444xw:1.00xh;0.129xw,0&resize=980:*'
+image_description = 'dog sitting'
+keywords = "dog, grass"
+insert_data = user_insert_data(image_path=image_path, 
+                               image_url=image_url, 
+                               image_description=image_description, 
+                               keywords=keywords)
+insert_data_to_db(root, tree, insert_data)

@@ -5,4 +5,4 @@
 ### run main.py to manage pretrained db!!
 
 
-#### to fix : update_size, test, user_query
+#### to fix : pretrain_cluster
