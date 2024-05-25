@@ -60,6 +60,7 @@ if __name__ == '__main__':
     # test insertion
     random.seed(8787)
     insert_vector = [random.random() for i in range(512)]
+    print(insert_vector)
     insert_data = {
                 'vector': insert_vector,
                 'image_url':'566', 
@@ -69,6 +70,7 @@ if __name__ == '__main__':
                 'group':0,
                 'subgroup':-1
             }
+    
     for i in range(20):
         insert_data_to_db(root, tree, insert_data)
     

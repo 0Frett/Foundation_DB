@@ -3,6 +3,7 @@ import pandas as pd
 from sklearn.cluster import KMeans
 import numpy as np
 from db_access import *
+import torch
 
 
 class BPlusTreeNode:
@@ -162,7 +163,7 @@ class BPlusTree:
         add_children(self.root, pretrained_cluster_info, 0, depth)
         return self.root
     
-    def match_similarity(self, query_vector: list, key_vector: list):
+    def match_similarity(self, query_vector, key_vector: list):
         query_vector = np.array(query_vector)
         key_vector = np.array(key_vector)
         query_norm = query_vector / np.linalg.norm(query_vector)
@@ -213,14 +214,14 @@ class BPlusTree:
         if result_node.size > self.max_leaf_size:
             parent = result_node.split_child()
             print(f'split node {result_node.name}')
-            print(root.bfs(root))
+            # print(root.bfs(root))
 
         while prune_branch_node.parent != None:
-            print(len(prune_branch_node.children), self.max_branch_num)
+            # print(len(prune_branch_node.children), self.max_branch_num)
             if len(prune_branch_node.children) > self.max_branch_num:
                 print(f'prune node {prune_branch_node.name} branches')
                 prune_branch_node  = prune_branch_node.prune_branch()
-                print(root.bfs(root))
+                # print(root.bfs(root))
             else:
                 break
         
@@ -232,6 +233,8 @@ class BPlusTree:
         print(f'retrieve data from node(s): {[node.name for node in candidate_nodes]}')
         datas_to_return = []
         N = int(total_number / len(candidate_nodes))
+        if N <= 0:
+            N = 1
         for node in candidate_nodes:
             result = similarity_search(node.name, query_vector, N)
             ids = get_ids_by_similarity_search_result(result)
