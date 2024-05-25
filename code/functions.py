@@ -51,7 +51,8 @@ if __name__ == '__main__':
 
     # test insertion
     insert_vector = [random.random() for i in range(512)]
-    insert_data = {'vector': insert_vector,
+    insert_data = {
+                'vector': insert_vector,
                 'image_url':'566', 
                 'image_description':'54645', 
                 'ai_description':'5465',
@@ -64,7 +65,8 @@ if __name__ == '__main__':
     # test retrieve
     query_vector = [random.random() for i in range(512)]
     return_info = ['image_url', 'image_description']
-    insert_data = {'vector': query_vector,
+    insert_data = {
+            'vector': query_vector,
             'image_url':'5679', 
             'image_description':'1321680', 
             'ai_description':'5465',
