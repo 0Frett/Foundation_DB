@@ -34,8 +34,8 @@ def insert_data_to_db(root:BPlusTreeNode, tree:BPlusTree, insert_data:dict):
     tree.insert(root, insert_data)
     print('Successfully insert data')
 
-def retrieve_data_to_user(root:BPlusTreeNode, tree:BPlusTree, query_data:dict, return_info:list):
-    data_df = tree.retrieve_data(root, query_data, return_info)
+def retrieve_data_to_user(root:BPlusTreeNode, tree:BPlusTree, query_data:dict, return_info:list, number: int):
+    data_df = tree.retrieve_data(root, query_data, return_info, number)
     return data_df
 
 
@@ -45,12 +45,16 @@ if __name__ == '__main__':
 
     # user input
     max_branch_num = 5
-    max_leaf_size = 1000
+    max_leaf_size = 10
     walk_multi_branch_threshold = 0.5
     structure_path = 'db-data/cluster_info.pkl'
-    tree, root = initialize_pretrained_db(structure_path=structure_path)
+    tree, root = initialize_pretrained_db(max_branch_num=max_branch_num, 
+                                          max_leaf_size=max_leaf_size, 
+                                          walk_multi_branch_threshold=walk_multi_branch_threshold, 
+                                          structure_path=structure_path)
 
     # test insertion
+    random.seed(8787)
     insert_vector = [random.random() for i in range(512)]
     insert_data = {
                 'vector': insert_vector,
@@ -61,8 +65,11 @@ if __name__ == '__main__':
                 'group':0,
                 'subgroup':-1
             }
-    insert_data_to_db(root, tree, insert_data)
-
+    for i in range(25):
+        insert_data_to_db(root, tree, insert_data)
+    
+    
+    '''
     # test retrieve
     query_vector = [random.random() for i in range(512)]
     return_info = ['image_url', 'image_description']
@@ -75,7 +82,9 @@ if __name__ == '__main__':
             'group':0,
             'subgroup':-1
         }
-    retrieve_data_to_user(root, tree, insert_data, return_info)
+    res = retrieve_data_to_user(root, tree, insert_data, return_info, 500)
+    print(res.head(5))
+    '''
 
     
 

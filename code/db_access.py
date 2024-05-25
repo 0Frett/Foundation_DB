@@ -43,14 +43,15 @@ def release_partitions(partitions: list):
     )
 
 # Before dropping a partition, you need to release it from memory.
-def drop_partition(partition:list):
+def drop_partition(partition):
     release_partitions(partition)
-    client.drop_partitions(
+    client.drop_partition(
         collection_name=collection,
-        partition_names=partition
+        partition_name=partition
     )
 
 def get_sizeof_partition(partition:list):
+    load_partitions(partition)
     res = client.query(
         collection_name=collection,
         filter="",
@@ -58,6 +59,7 @@ def get_sizeof_partition(partition:list):
         output_fields=["count(*)"]
     )
     size = res[0]["count(*)"]
+    release_partitions(partition)
     return size
 
 def load_data_from_partition(partition):
@@ -91,3 +93,31 @@ def insert_data_to_partition(partition, data):
         partition_name=partition
     )
     release_partitions([partition])
+
+
+def similarity_search(partition, query_vector, limit):
+    load_partitions([partition])
+    res = client.search(
+        collection_name=collection,
+        data=[query_vector],
+        limit=limit,
+        partition_names=[partition]
+    )
+    release_partitions([partition])
+    return res
+
+def get_ids_by_similarity_search_result(result):
+    ids = []
+    for dict in result[0]:
+        ids.append(dict['id'])
+    return ids
+
+def get_entities_by_ids(partition, ids):
+    load_partitions([partition])
+    res = client.get(
+        collection_name=collection,
+        ids=ids,
+        partition_names=[partition]
+    )
+    release_partitions([partition])
+    return res

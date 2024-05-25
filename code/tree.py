@@ -26,7 +26,7 @@ class BPlusTreeNode:
         self.size = size
     
     def drop(self):
-        drop_partition([self.name])
+        drop_partition(self.name)
 
     def load_data(self):
         data_obj = load_data_from_partition(partition=self.name)
@@ -43,10 +43,9 @@ class BPlusTreeNode:
         # Perform K-means clustering to split the node into two
         data_dict = self.load_data()
         embs = []
-        keys = []
-        for key, value in data_dict.items():
-            embs.append(value['vector'])
-            keys.append(key)
+
+        for dict in data_dict:
+            embs.append(dict['vector'])
 
         kmeans = KMeans(n_clusters=2, random_state=0).fit(embs)
         labels = list(kmeans.labels_)
@@ -57,20 +56,25 @@ class BPlusTreeNode:
         cluster2 = BPlusTreeNode(name=f'{self.name}_1', embs=cluster_centers[1], is_leaf=True, parent=self.parent)
         
         # Assign embeddings to the new nodes based on the labels
+        
         for idx, label in enumerate(labels):
             if label == 0:
-                cluster1.insert_data(cluster1.name, data_dict[keys[idx]])
+                del data_dict[idx]['id']
+                cluster1.insert_data(data_dict[idx])
             else:
-                cluster2.insert_data(cluster2.name, data_dict[keys[idx]])
-        
+                del data_dict[idx]['id']
+                cluster2.insert_data(data_dict[idx])
+            
         # Update sizes
         cluster1.update_size()
         cluster2.update_size()
         
         # Replace current node with two new nodes
-        self.parent = None
         self.drop()
-
+        parent = self.parent
+        parent.children.remove(self)
+        self.parent = None
+        
         return cluster1.parent
 
     def prune_branch(self):
@@ -182,34 +186,36 @@ class BPlusTree:
         print(f'insert data into leaf node {result_node.name}')
         #####   Connect to DB and insert data into result_node  #####
         result_node.insert_data(data)
-
+        
+        prune_branch_node = result_node.parent
+        
         if result_node.size > self.max_leaf_size:
             parent = result_node.split_child()
             print(f'split node {result_node.name}')
 
-        prune_branch_node = result_node.parent
         while prune_branch_node.parent != None:
             if len(prune_branch_node.children) > self.max_branch_num:
                 print(f'prune node {prune_branch_node.name} branches')
                 prune_branch_node  = prune_branch_node.prune_branch()
             else:
                 break
+        
     
-    def retrieve_data(self, root: BPlusTreeNode, query_data:dict, return_info:list):
+    def retrieve_data(self, root: BPlusTreeNode, query_vector: list, return_info:list, total_number: int):
         candidate_nodes = []
         candidate_similarities = []
-        query_vector = query_data['vector']
         self.search(root, query_vector, candidate_nodes, candidate_similarities)
-        result_node = candidate_nodes[np.argmax(candidate_similarities)]
-        print(f'retrieve data from node(s): {result_node.name}')
+        print(f'retrieve data from node(s): {[node.name for node in candidate_nodes]}')
         datas_to_return = []
-        cols = [key for key in value.keys() if key in return_info]
-        for node in result_node:
-            data_dict = node.load_data()
-            for key, value_obj in data_dict.items():
+        N = int(total_number / len(candidate_nodes))
+        for node in candidate_nodes:
+            result = similarity_search(node.name, query_vector, N)
+            ids = get_ids_by_similarity_search_result(result)
+            data_dict = get_entities_by_ids(node.name, ids)
+            for dict in data_dict:
                 row = {}
-                for key, value in value_obj.items():
-                    if key in cols:
+                for key, value in dict.items():
+                    if key in return_info:
                         row[f'{key}'] = value
                 datas_to_return.append(row)
         return_df = pd.DataFrame(datas_to_return)
