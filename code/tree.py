@@ -14,15 +14,7 @@ class BPlusTreeNode:
         self.name = name
         if self.is_leaf:
             create_partition(self.name)
-
-    def load_data(self):
-        data_obj = load_data_from_partition(partition=self.name)
-        return data_obj
-    
-    def insert_data(self, data:dict):
-        if self.is_leaf == True:
-            insert_data_to_partition(partition=self.name, data=data)
-              
+        
     def update_size(self):
         if self.is_leaf == True:
             size = get_sizeof_partition(partition=[self.name])
@@ -34,6 +26,17 @@ class BPlusTreeNode:
     
     def drop(self):
         drop_partition([self.name])
+
+    def load_data(self):
+        data_obj = load_data_from_partition(partition=self.name)
+        return data_obj
+    
+    def insert_data(self, data:dict):
+        if self.is_leaf == True:
+            insert_data_to_partition(partition=self.name, data=data)
+            self.update_size()
+        else:
+            print('Cannot insert into non-leaf node')
 
     def split_child(self):
         # Perform K-means clustering to split the node into two
@@ -175,21 +178,42 @@ class BPlusTree:
         query_vector = data['vector']
         self.search(root, query_vector, candidate_nodes, candidate_similarities)
         result_node = candidate_nodes[np.argmax(candidate_similarities)]
-        print(result_node.name)
+        print(f'insert data into leaf node {result_node.name}')
         #####   Connect to DB and insert data into result_node  #####
         result_node.insert_data(data)
 
         if result_node.size > self.max_leaf_size:
             parent = result_node.split_child()
-            print('split')
+            print(f'split node {result_node.name}')
 
         prune_branch_node = result_node.parent
         while prune_branch_node.parent != None:
             if len(prune_branch_node.children) > self.max_branch_num:
+                print(f'prune node {prune_branch_node.name} branches')
                 prune_branch_node = prune_branch_node.prune_branch()
             else:
                 break
-
+    
+    def retrieve_data(self, root: BPlusTreeNode, query_data:dict, return_info:list):
+        candidate_nodes = []
+        candidate_similarities = []
+        query_vector = query_data['vector']
+        self.search(root, query_vector, candidate_nodes, candidate_similarities)
+        result_node = candidate_nodes[np.argmax(candidate_similarities)]
+        print(f'retrieve data from node(s): {result_node.name}')
+        datas_to_return = []
+        cols = [key for key in value.keys() if key in return_info]
+        for node in result_node:
+            data_dict = node.load_data()
+            for key, value_obj in data_dict.items():
+                row = {}
+                for key, value in value_obj.items():
+                    if key in cols:
+                        row[f'{key}'] = value
+                datas_to_return.append(row)
+        return_df = pd.DataFrame(datas_to_return)
+        return return_df
+                
     def merge_similar_semantic_cluster(self):
         pass
 
