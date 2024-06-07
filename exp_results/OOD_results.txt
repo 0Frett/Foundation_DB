@@ -1,0 +1,5 @@
+dataset size accuracy
+ramen 150 0.56
+ice cream 150 0.54
+pokemon 809 0.94
+engraving 248 0.70

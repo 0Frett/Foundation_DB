@@ -29,8 +29,7 @@ tree_params = get_user_tree_params(max_branch_num=max_branch_num,
                                    structure_path=structure_path)
 tree, root = initialize_pretrained_db(**tree_params)
 
-# # search using image and text
-# print('========== Test Query ============')
+
 with open('D:/NTU/CSIE/112/DBMS/github/pretrain_database/db-data/save_pairs.pkl', 'rb') as file:
     save_pairs = pickle.load(file)
 
