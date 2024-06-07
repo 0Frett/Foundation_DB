@@ -37,3 +37,12 @@ client.create_collection(
     schema=schema,
     index_params=index_params
 )
+
+num_sub = [20, 3, 3, 5, 5]
+
+for i in range(5):
+    for j in range(num_sub[i]):
+        client.create_partition(
+            collection_name="image",
+            partition_name=(str(i) + "_" + str(j))
+        )

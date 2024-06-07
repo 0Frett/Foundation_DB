@@ -34,8 +34,8 @@ client = MilvusClient(
 file_path = "db-data/emb_info.pkl"
 with open(file_path, 'rb') as file:
     emb_info = pickle.load(file)
-df = pd.read_csv('db-data/test_df.csv')
-pair_path = 'db-data/test_save_pairs.pkl' 
+df = pd.read_csv('db-data/merge_df.csv')
+pair_path = 'db-data/save_pairs.pkl' 
 s = {}
 with open(pair_path, 'wb') as file:
     pickle.dump(s, file)

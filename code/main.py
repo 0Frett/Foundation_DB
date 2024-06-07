@@ -12,8 +12,8 @@ import numpy as np
 from user import *
 
 # init tree
-max_branch_num = 5
-max_leaf_size = 10
+max_branch_num = 10
+max_leaf_size = 2000
 walk_multi_branch_threshold = 0.5
 structure_path = 'test_cluster_info.pkl'
 tree_params = get_user_tree_params(max_branch_num=max_branch_num, 
