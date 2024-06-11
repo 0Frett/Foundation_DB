@@ -6,6 +6,13 @@ import pickle
 import time
 from tqdm import tqdm
 
+
+# Fill in your database ip address
+client = MilvusClient(
+    uri="http://XXX.XXX.X.XXX:XXXX"
+)
+
+
 def parse_string_to_list(input_string):
     """
     Parse a string into several items using a comma as the delimiter
@@ -24,12 +31,6 @@ def parse_string_to_list(input_string):
 
     return items
 
-
-
-#########   KEY IN YOUR IP  #########
-client = MilvusClient(
-    uri="http://192.168.1.111:19530"
-)
 
 file_path = "db-data/emb_info.pkl"
 with open(file_path, 'rb') as file:
@@ -67,7 +68,7 @@ for index, row in tqdm(df.iterrows(), total=df.shape[0]):
 with open(pair_path, 'wb') as file:
     pickle.dump(save_pairs, file)
 
-#pair_path = 'db-data\save_pairs.pkl' 
+#pair_path = 'db-data/save_pairs.pkl' 
 with open(pair_path, 'rb') as file:
     save_pairs = pickle.load(file)
 

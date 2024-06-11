@@ -15,7 +15,7 @@ from user import *
 max_branch_num = 10
 max_leaf_size = 2000
 walk_multi_branch_threshold = 0.5
-structure_path = 'test_cluster_info.pkl'
+structure_path = '/db-data/cluster_info.pkl'
 tree_params = get_user_tree_params(max_branch_num=max_branch_num, 
                                    max_leaf_size=max_leaf_size, 
                                    walk_multi_branch_threshold=walk_multi_branch_threshold, 
@@ -23,7 +23,7 @@ tree_params = get_user_tree_params(max_branch_num=max_branch_num,
 tree, root = initialize_pretrained_db(**tree_params)
 
 # # search using image and text
-# print('========== Test Query ============')
+print('========== Test Query ============')
 image_path = 'test.png'
 text_input = 'A dog on the grass.'
 embs, result_info = user_query_preprocess(image_path=image_path, 

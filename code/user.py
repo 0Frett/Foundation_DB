@@ -28,8 +28,8 @@ def get_clip_embedding(image_path:str=None, text_input:str=None):
 
     return outputs
 
-random.seed(8787)
-insert_vector = [random.random() for i in range(512)]
+# random.seed(8787)
+# insert_vector = [random.random() for i in range(512)]
 
 def user_query_preprocess(image_path:str=None, 
                           text_input:str=None,
@@ -77,11 +77,10 @@ def user_insert_data(image_path:str=None, image_url:str=None, image_description:
     return data
 
 
-structure_path = 'D:/NTU/CSIE/112/DBMS/github/pretrain_database/testing/test_cluster_info.pkl'
 def get_user_tree_params(max_branch_num:int=20, 
                     max_leaf_size:int=2400, 
                     walk_multi_branch_threshold:float=0.6, 
-                    structure_path:str=structure_path):
+                    structure_path:str=None):
     return {'max_branch_num': max_branch_num,
             'max_leaf_size': max_leaf_size,
             'walk_multi_branch_threshold': walk_multi_branch_threshold,

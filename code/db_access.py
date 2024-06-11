@@ -1,7 +1,8 @@
 from pymilvus import *
 
+# Fill in your database ip address
 client = MilvusClient(
-    uri="http://192.168.1.111:19530"
+    uri="http://XXX.XXX.X.XXX:XXXX"
 )
 collection = 'image'
 
